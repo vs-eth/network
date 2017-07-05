@@ -1,6 +1,7 @@
 # Managed by ansible (role: network), do not edit!
 
 auto {{ item.value.parent }}.{{ item.key }}
+{% if 'ip' in item.value %}
 iface {{ item.value.parent }}.{{ item.key }} inet static
 	address   {{ item.value.ip | ipaddr('address') }}
 	network   {{ item.value.ip | ipaddr('network') }}
@@ -35,4 +36,10 @@ iface {{ item.value.parent }}.{{ item.key }} inet6 static
 	accept_ra 0
 	autoconf 0
 {% endif %}
+{% endif %}
+{% else %}
+iface {{ item.value.parent }}.{{ item.key }} inet manual
+	vlan-raw-device {{ item.value.parent }}
+ 	post-up ifconfig $IFACE up
+	pre-down ifconfig $IFACE down
 {% endif %}

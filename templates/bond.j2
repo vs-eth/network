@@ -5,6 +5,7 @@
 {% endfor %}
 
 auto {{ item.key }}
+{% if network_mode == 'classic' %}
 iface {{ item.key }} inet static
 	slaves {{ item.value.slaves|join(' ') }}
 {% if 'bondmode' in item.value %}
@@ -12,6 +13,26 @@ iface {{ item.key }} inet static
 {% else %}
 	bond-mode 802.3ad
 	bond_xmit_hash_policy layer3+4
+{% endif %}
+{% else %}
+allow-{{ item.key }}_br {{ item.key }}
+iface {{ item.key }} inet manual
+	ovs_type OVSBond
+	ovs_bonds {{ item.value.slaves|join(' ') }}
+	ovs_options bond_mode=balance-tcp lacp=active vlan_mode=native-untagged tag=2523
+	ovs_bridge {{ item.key }}_br
+
+auto {{ item.key }}_br
+allow-ovs {{ item.key }}_br
+iface {{ item.key }}_br inet manual
+	ovs_type OVSBridge
+	ovs_ports {{ item.key }}
+
+allow-{{ item.key }}_br {{ item.key }}_if
+iface {{ item.key }}_if inet static
+	ovs_bridge {{ item.key }}
+	ovs_options tag=2523
+	ovs_extra set interface ${IFACE} external-ids:iface-id=$(hostname -s)-${IFACE}-vif 
 {% endif %}
 	address   {{ item.value.ip | ipaddr('address') }}
 	network   {{ item.value.ip | ipaddr('network') }}
@@ -35,7 +56,11 @@ iface {{ item.key }} inet static
 {% endif %}
 
 {% if 'ip6' in item.value %}
+{% if network_mode == 'classic' %}
 iface {{ item.key }} inet6 static
+{% else %}
+iface {{ item.key }}_if inet6 static
+{% endif %}
 	address {{ item.value.ip6 }}
 {% if 'rt' in item.value %}
 	post-up ip -6 route add {{ item.value.ip6|ipaddr('subnet') }} dev {{ item.key }} src {{ item.value.ip6 | ipaddr('address') }} table {{ item.value.rt }}
