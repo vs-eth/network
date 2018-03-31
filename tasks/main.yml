@@ -2,8 +2,8 @@
   - name: Install required software
     become: True
     when:
-      - "'netconf' in hostvars[inventory_hostname]"
-      - "'if' in hostvars[inventory_hostname]['netconf']"
+      - netconf is defined
+      - netconf.if is defined
     apt: name={{ item }} state=present
     with_items:
       - bridge-utils
@@ -23,27 +23,27 @@
     template: src=if.j2 dest=/etc/network/interfaces.d/{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['if'] }}"
     when:
-      - "'netconf' in hostvars[inventory_hostname]"
-      - "'if' in hostvars[inventory_hostname]['netconf']"
+      - netconf is defined
+      - netconf.if is defined
 
   - name: Configure bond interfaces
     become: True
     template: src=bond.j2 dest=/etc/network/interfaces.d/{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['bond'] }}"
     when:
-      - "'netconf' in hostvars[inventory_hostname]"
-      - "'bond' in hostvars[inventory_hostname]['netconf']"
+      - netconf is defined
+      - netconf.bond is defined
 
   - name: Configure vlan interfaces
     become: True
     template: src=vlan.j2 dest=/etc/network/interfaces.d/zz-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['vlan'] }}"
     when:
-      - "'netconf' in hostvars[inventory_hostname]"
-      - "'vlan' in hostvars[inventory_hostname]['netconf']"
+      - netconf is defined
+      - netconf.vlan is defined
 
   - name: Overwrite main network config file
     become: True
     template: src=interfaces.j2 dest=/etc/network/interfaces owner=root group=root mode=0644
     when:
-      - "'netconf' in hostvars[inventory_hostname]"
+      - netconf is defined
