@@ -15,8 +15,8 @@
     become: True
     template: src=rt_tables.j2 dest=/etc/iproute2/rt_tables owner=root group=root mode=0644
     when:
-      - "'netconf' in hostvars[inventory_hostname]"
-      - "'rt' in hostvars[inventory_hostname]['netconf']"
+      - netconf is defined
+      - netconf.rt is defined
 
   - name: Configure normal interfaces
     become: True
