@@ -36,11 +36,19 @@
 
   - name: Configure vlan interfaces
     become: True
-    template: src=vlan.j2 dest=/etc/network/interfaces.d/zz-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
+    template: src=vlan.j2 dest=/etc/network/interfaces.d/yy-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['vlan'] }}"
     when:
       - "'netconf' in hostvars[inventory_hostname]"
       - "'vlan' in hostvars[inventory_hostname]['netconf']"
+
+  - name: Configure bridge interfaces
+    become: True
+    template: src=bridge.j2 dest=/etc/network/interfaces.d/zz-{{ item.key }} owner=root group=root mode=0644
+    with_dict: "{{ hostvars[inventory_hostname]['netconf']['bridge'] }}"
+    when:
+      - "'netconf' in hostvars[inventory_hostname]"
+      - "'bridge' in hostvars[inventory_hostname]['netconf']"
 
   - name: Overwrite main network config file
     become: True

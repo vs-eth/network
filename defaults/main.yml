@@ -2,3 +2,4 @@
 # VLANs that well, so we need to retag them on ingress. This defaults to the
 # normal SOS DC server network
 ovs_untagged_vlan: 2523
+network_mode: classic

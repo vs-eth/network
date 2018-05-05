@@ -4,8 +4,15 @@
 # {{ intf }} is slave
 {% endfor %}
 
+{% if "ip" in item.value %}
+{% set ipmode = "static" %}
+{% else %}
+{% set ipmode = "manual" %}
+{% endif %}
+
 {% if network_mode == 'classic' %}
-iface {{ item.key }} inet static
+auto {{ item.key }}
+iface {{ item.key }} inet {{ ipmode }}
 	slaves {{ item.value.slaves|join(' ') }}
 {% if 'bondmode' in item.value %}
 	bond-mode {{ item.value.bondmode }}
@@ -35,10 +42,12 @@ iface {{ item.key }}if inet static
 	ovs_options tag={{ ovs_untagged_vlan }}
 	ovs_extra set interface ${IFACE} external-ids:iface-id=$(hostname -s)-${IFACE}-vif
 {% endif %}
+{% if 'ip' in item.value %}
 	address   {{ item.value.ip | ipaddr('address') }}
 	network   {{ item.value.ip | ipaddr('network') }}
 	netmask   {{ item.value.ip | ipaddr('netmask') }}
 	broadcast {{ item.value.ip | ipaddr('broadcast') }}
+{% endif %}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
 	post-up ip route add {{ item.value.ip|ipaddr('subnet') }} dev {{ item.key }} src {{ item.value.ip | ipaddr('address') }} table {{ item.value.rt }}
