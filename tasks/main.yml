@@ -3,7 +3,6 @@
     become: True
     when:
       - "'netconf' in hostvars[inventory_hostname]"
-      - "'if' in hostvars[inventory_hostname]['netconf']"
     apt: name={{ item }} state=present
     with_items:
       - bridge-utils
@@ -17,6 +16,12 @@
     when:
       - "'netconf' in hostvars[inventory_hostname]"
       - "'rt' in hostvars[inventory_hostname]['netconf']"
+
+  - name: Configure loopback interface
+    become: True
+    copy: src=lo dest=/etc/network/interfaces.d/lo owner=root group=root mode=0644
+    when:
+      - "'netconf' in hostvars[inventory_hostname]"
 
   - name: Configure normal interfaces
     become: True
@@ -36,7 +41,7 @@
 
   - name: Configure vlan interfaces
     become: True
-    template: src=vlan.j2 dest=/etc/network/interfaces.d/yy-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
+    template: src=vlan.j2 dest=/etc/network/interfaces.d/zz-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['vlan'] }}"
     when:
       - "'netconf' in hostvars[inventory_hostname]"
@@ -55,3 +60,11 @@
     template: src=interfaces.j2 dest=/etc/network/interfaces owner=root group=root mode=0644
     when:
       - "'netconf' in hostvars[inventory_hostname]"
+      - not network_squash_config
+
+  - name: Overwrite main network config file
+    become: True
+    assemble: src=/etc/network/interfaces.d dest=/etc/network/interfaces owner=root group=root mode=0644
+    when:
+      - "'netconf' in hostvars[inventory_hostname]"
+      - network_squash_config
