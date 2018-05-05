@@ -53,7 +53,7 @@
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['bridge'] }}"
     when:
       - netconf is defined
-      - netconfig.bridge is defined
+      - netconf.bridge is defined
 
   - name: Overwrite main network config file
     become: True
