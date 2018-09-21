@@ -15,9 +15,9 @@ auto {{ item.key }}
 iface {{ item.key }} inet {{ ipmode }}
 	slaves {{ item.value.slaves|join(' ') }}
 {% if 'bondmode' in item.value %}
-	bond-mode {{ item.value.bondmode }}
+	bond_mode {{ item.value.bondmode }}
 {% else %}
-	bond-mode 802.3ad
+	bond_mode 802.3ad
 	bond_xmit_hash_policy layer3+4
 {% endif %}
 {% else %}
@@ -80,4 +80,13 @@ iface {{ item.key }}if inet6 static
 	accept_ra 0
 	autoconf 0
 {% endif %}
+{% else %}
+{% if network_mode == 'classic' %}
+iface {{ item.key }} inet6 manual
+{% else %}
+iface {{ item.key }}if inet6 manual
+{% endif %}
+	# Explicitly disable acceptance of RAs
+	accept_ra 0
+	autoconf 0
 {% endif %}

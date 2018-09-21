@@ -1,6 +1,11 @@
 # Managed by ansible (role: network), do not edit!
 
+{% if item.value.parent.find(".") != -1 %}
+# Workaround for bridge-on-vlan race condition
+allow-hotplug {{ item.key }}
+{% else %}
 auto {{ item.key }}
+{% endif %}
 {% if 'ip' in item.value %}
 iface {{ item.key }} inet static
         bridge_ports {{ item.value.parent }}
@@ -36,10 +41,19 @@ iface {{ item.key }} inet6 static
         accept_ra 0
         autoconf 0
 {% endif %}
+{% else %}
+iface {{ item.key }} inet6 manual
+        # Explicitly disable acceptance of RAs
+        accept_ra 0
+        autoconf 0
 {% endif %}
 {% else %}
 iface {{ item.key }} inet manual
         bridge_ports {{ item.value.parent }}
-        post-up ifconfig $IFACE up
-        pre-down ifconfig $IFACE down
+        post-up echo 1 > /sys/class/net/{{ item.key }}/bridge/vlan_filtering
+
+iface {{ item.key }} inet6 manual
+	# Explicitly disable acceptance of RAs
+	accept_ra 0
+	autoconf 0
 {% endif %}

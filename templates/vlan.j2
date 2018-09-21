@@ -36,10 +36,21 @@ iface {{ item.value.parent }}.{{ item.key }} inet6 static
 	accept_ra 0
 	autoconf 0
 {% endif %}
+{% else %}
+iface {{ item.value.parent }}.{{ item.key }} inet6 manual
+	# Explicitly disable acceptance of RAs
+	accept_ra 0
+	autoconf 0
 {% endif %}
 {% else %}
 iface {{ item.value.parent }}.{{ item.key }} inet manual
 	vlan-raw-device {{ item.value.parent }}
- 	post-up ifconfig $IFACE up
-	pre-down ifconfig $IFACE down
+{% for iface in item.value.startifs|default([]) %}
+        post-up ifup {{ iface }}
+{% endfor %}
+
+iface {{ item.value.parent }}.{{ item.key }} inet6 manual
+	# Explicitly disable acceptance of RAs
+	accept_ra 0
+	autoconf 0
 {% endif %}
