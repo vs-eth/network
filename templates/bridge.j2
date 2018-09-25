@@ -43,9 +43,8 @@ iface {{ item.key }} inet6 static
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 manual
-        # Explicitly disable acceptance of RAs
-        accept_ra 0
-        autoconf 0
+	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
+	post-up echo 1 > /proc/sys/net/ipv6/conf/{{ item.key }}/disable_ipv6
 {% endif %}
 {% else %}
 iface {{ item.key }} inet manual
@@ -53,7 +52,6 @@ iface {{ item.key }} inet manual
         post-up echo 1 > /sys/class/net/{{ item.key }}/bridge/vlan_filtering
 
 iface {{ item.key }} inet6 manual
-	# Explicitly disable acceptance of RAs
-	accept_ra 0
-	autoconf 0
+	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
+	post-up echo 1 > /proc/sys/net/ipv6/conf/{{ item.key }}/disable_ipv6
 {% endif %}
