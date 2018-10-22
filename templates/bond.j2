@@ -13,12 +13,15 @@
 {% if network_mode == 'classic' %}
 auto {{ item.key }}
 iface {{ item.key }} inet {{ ipmode }}
-	slaves {{ item.value.slaves|join(' ') }}
+        slaves {{ item.value.slaves|join(' ') }}
 {% if 'bondmode' in item.value %}
-	bond_mode {{ item.value.bondmode }}
+        bond_mode {{ item.value.bondmode }}
 {% else %}
-	bond_mode 802.3ad
-	bond_xmit_hash_policy layer3+4
+        bond_mode 802.3ad
+        bond_xmit_hash_policy layer3+4
+        bond_miimon 100
+        bond_lacp-rate 1
+        echo 1000 > /sys/class/net/{{ item.key }}/bonding/ad_actor_sys_prio
 {% endif %}
 {% else %}
 auto {{ item.key }}br
