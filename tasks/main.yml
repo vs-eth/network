@@ -3,12 +3,13 @@
     become: True
     when:
       - netconf is defined
-    apt: name={{ item }} state=present
-    with_items:
-      - bridge-utils
-      - resolvconf
-      - ifenslave
-      - iproute2
+    apt:
+      name:
+        - bridge-utils
+        - resolvconf
+        - ifenslave
+        - iproute2
+      state: present
 
   - name: Configure routing tables
     become: True
