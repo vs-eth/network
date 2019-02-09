@@ -11,6 +11,13 @@
         - iproute2
       state: present
 
+  - name: Kill cloud-config network configuration
+    become: True
+    when: network_kill_cloudconfig
+    file:
+      path: /etc/network/interfaces.d/50-cloud-init.cfg
+      state: absent
+
   - name: Configure routing tables
     become: True
     template: src=rt_tables.j2 dest=/etc/iproute2/rt_tables owner=root group=root mode=0644
