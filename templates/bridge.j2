@@ -29,6 +29,9 @@ iface {{ item.key }} inet static
 {% if 'dnssearch' in item.value %}
         dns-search {{ item.value.dnssearch }}
 {% endif %}
+{% if 'postup' in item.value %}
+	post-up {{ item.value.postup }}
+{% endif %}
 
 {% if 'ip6' in item.value %}
 iface {{ item.key }} inet6 static

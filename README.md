@@ -15,7 +15,8 @@ It is configured by setting `netconf` for the host, there are the following opti
   * gateway6 *(required when rt set)*: IPv6 default gateway, required when `rt` is set. See information on policy-based routing below.
   * dns *(optional)*: DNS server
   * dnssearch *(optional)*: DNS search domain
-  * rt: Routing table to use
+  * rt *(optional)*: Routing table to use
+  * postup *(optional)*: Post-up command to execute, useful for, say, ethtool.
 * bond: Bonding interface: Like `if`, but additionally has:
   * slaves: List of slave interfaces
   * bondmode *(optional)*: Bond operation mode, per default 802.3ad (aka LACP) is used
