@@ -26,7 +26,7 @@ It is configured by setting `netconf` for the host, there are the following opti
 
 Note that for each interface type, the element contains a list of dicts, where each dict's key is the name of an interface and each dict's value is the interface configuration as specified above.
 Example configuration (for `mon-hci.sos.ethz.ch`):
-`
+```
 netconf:
   rt:
     vmvlan: 2
@@ -51,7 +51,7 @@ netconf:
     2999:
       parent: bond0
       ip: 172.31.0.250/26
-`
+```
 
 ## Policy-based routing
 Special nodes (e.g. monitoring machines) might have multiple interfaces that can each have a default route. In this case, you need to enable policy-based routing:
