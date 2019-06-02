@@ -13,7 +13,7 @@
 
   - name: Kill cloud-config network configuration
     become: True
-    when: network_kill_cloudconfig
+    when: network_kill_cloudconfig | bool
     file:
       path: /etc/network/interfaces.d/50-cloud-init.cfg
       state: absent
@@ -75,4 +75,4 @@
     assemble: src=/etc/network/interfaces.d dest=/etc/network/interfaces owner=root group=root mode=0644
     when:
       - netconf is defined
-      - network_squash_config
+      - network_squash_config | bool
