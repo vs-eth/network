@@ -34,6 +34,12 @@ iface {{ item.key }} inet static
 {% endif %}
 
 {% if 'ip6' in item.value %}
+{% if item.value.ip6 == "dhcp" %}
+iface {{ item.key }} inet6 dhcp
+{% if 'prefix' in item.value %}
+        request_prefix 1
+{% endif %}
+{% else %}
 iface {{ item.key }} inet6 static
         address {{ item.value.ip6 }}
 {% if 'rt' in item.value %}
@@ -43,6 +49,7 @@ iface {{ item.key }} inet6 static
         post-up ip -6 rule add to {{ item.value.ip6 }} table {{ item.value.rt }}
         accept_ra 0
         autoconf 0
+{% endif %}
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 manual

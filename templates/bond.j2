@@ -72,11 +72,13 @@ iface {{ item.key }}if inet static
 {% endif %}
 
 {% if 'ip6' in item.value %}
-{% if network_mode == 'classic' %}
-iface {{ item.key }} inet6 static
-{% else %}
-iface {{ item.key }}if inet6 static
+{% if item.value.ip6 == "dhcp" %}
+iface {{ item.key }} inet6 dhcp
+{% if 'prefix' in item.value %}
+        request_prefix 1
 {% endif %}
+{% else %}
+iface {{ item.key }} inet6 static
 	address {{ item.value.ip6 }}
 {% if 'rt' in item.value %}
 	post-up ip -6 route add {{ item.value.ip6|ipaddr('subnet') }} dev {{ item.key }} src {{ item.value.ip6 | ipaddr('address') }} table {{ item.value.rt }}
@@ -86,12 +88,9 @@ iface {{ item.key }}if inet6 static
 	accept_ra 0
 	autoconf 0
 {% endif %}
-{% else %}
-{% if network_mode == 'classic' %}
-iface {{ item.key }} inet6 manual
-{% else %}
-iface {{ item.key }}if inet6 manual
 {% endif %}
+{% else %}
+iface {{ item.key }} inet6 manual
 	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
 	post-up echo 1 > /proc/sys/net/ipv6/conf/{{ item.key }}/disable_ipv6
 {% endif %}
