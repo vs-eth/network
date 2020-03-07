@@ -1,6 +1,6 @@
 # Managed by ansible (role: network), do not edit!
 
-{% if item.value.parent.find(".") != -1 %}
+{% if 'parent' in item.value and item.value.parent.find(".") != -1 %}
 # Workaround for bridge-on-vlan race condition
 allow-hotplug {{ item.key }}
 {% else %}
@@ -8,7 +8,7 @@ auto {{ item.key }}
 {% endif %}
 {% if 'ip' in item.value %}
 iface {{ item.key }} inet static
-        bridge_ports {{ item.value.parent }}
+        bridge_ports {{ item.value.parent if 'parent' in item.value else 'none' }}
         address   {{ item.value.ip | ipaddr('address') }}
         network   {{ item.value.ip | ipaddr('network') }}
         netmask   {{ item.value.ip | ipaddr('netmask') }}
@@ -42,7 +42,7 @@ iface {{ item.key }} inet6 dhcp
 {% else %}
 iface {{ item.key }} inet6 static
         address {{ item.value.ip6 }}
-{% if 'rt' in item.value %}
+{% if 'rt' in item.value and 'parent' in item.value %}
         post-up ip -6 route add {{ item.value.ip6|ipaddr('subnet') }} dev {{ item.value.parent }}.{{ item.key }} src {{ item.value.ip6 | ipaddr('address') }} table {{ item.value.rt }}
         post-up ip -6 route add default via {{ item.value.gateway6 }} dev {{ item.value.parent }}.{{ item.key }} table {{ item.value.rt }}
         post-up ip -6 rule add from {{ item.value.ip6 }} table {{ item.value.rt }}
@@ -58,7 +58,7 @@ iface {{ item.key }} inet6 manual
 {% endif %}
 {% else %}
 iface {{ item.key }} inet manual
-        bridge_ports {{ item.value.parent }}
+        bridge_ports {{ item.value.parent if 'parent' in item.value else 'none' }}
         post-up echo 1 > /sys/class/net/{{ item.key }}/bridge/vlan_filtering
 
 iface {{ item.key }} inet6 manual
