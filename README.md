@@ -20,6 +20,7 @@ It is configured by setting `netconf` for the host, there are the following opti
 * bond: Bonding interface: Like `if`, but additionally has:
   * slaves: List of slave interfaces
   * bondmode *(optional)*: Bond operation mode, per default 802.3ad (aka LACP) is used
+  * delay_up: *(optional)*: Add a delay in post-up to allow for the bond device to settle before attempting DAD etc.
 * vlan: VLAN interface. The name is the vlan id, configuration is like `if`, additionally the following is required:
   * parent: Interface this VLAN should be created on
 * rt: Extra routing tables. Maps from name to number
@@ -40,6 +41,7 @@ netconf:
       gateway: 82.130.108.193
       dnssearch: sos.ethz.ch
       dns: 129.132.250.2
+      delay_up: True
   vlan:
     2522:
       parent: bond0
