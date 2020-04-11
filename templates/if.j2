@@ -1,11 +1,15 @@
 # Managed by ansible (role: network), do not edit!
 
 allow-hotplug {{ item.key }}
+{% if item.value.ip == "dhcp" %}
+iface {{ item.key }} inet dhcp
+{% else %}
 iface {{ item.key }} inet static
 	address   {{ item.value.ip | ipaddr('address') }}
 	network   {{ item.value.ip | ipaddr('network') }}
 	netmask   {{ item.value.ip | ipaddr('netmask') }}
 	broadcast {{ item.value.ip | ipaddr('broadcast') }}
+{% endif %}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
 	post-up ip route add default via {{ item.value.gateway }} dev {{ item.key }} table {{ item.value.rt }}
