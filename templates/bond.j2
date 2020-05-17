@@ -21,7 +21,7 @@ iface {{ item.key }} inet {{ ipmode }}
         bond_xmit_hash_policy layer3+4
         bond_miimon 100
         bond_lacp-rate 1
-        post-up {{ 'sleep 20 && ' if 'delay_up' in item.value and item.value.delay_up }}echo 1000 > /sys/class/net/{{ item.key }}/bonding/ad_actor_sys_prio
+        post-up {{ 'sleep 20 && ' if 'delay_up' in item.value and item.value.delay_up else '' }}echo 1000 > /sys/class/net/{{ item.key }}/bonding/ad_actor_sys_prio
 {% endif %}
 {% else %}
 auto {{ item.key }}br
