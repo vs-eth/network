@@ -9,6 +9,8 @@ auto {{ item.key }}
 {% if 'ip' in item.value %}
 iface {{ item.key }} inet static
 	bridge-ports {{ item.value.parent if 'parent' in item.value else 'none' }}
+	bridge-stp off
+	bridge-fd 0
 	address {{ item.value.ip | ipaddr('address/prefix') }}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
