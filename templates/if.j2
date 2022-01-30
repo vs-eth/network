@@ -2,10 +2,7 @@
 
 allow-hotplug {{ item.key }}
 iface {{ item.key }} inet static
-	address   {{ item.value.ip | ipaddr('address') }}
-	network   {{ item.value.ip | ipaddr('network') }}
-	netmask   {{ item.value.ip | ipaddr('netmask') }}
-	broadcast {{ item.value.ip | ipaddr('broadcast') }}
+	address {{ item.value.ip | ipaddr('address/prefix') }}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
 	post-up ip route add default via {{ item.value.gateway }} dev ${IFACE} table {{ item.value.rt }}

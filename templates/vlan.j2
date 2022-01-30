@@ -3,10 +3,7 @@
 auto {{ item.value.parent }}.{{ item.key }}
 {% if 'ip' in item.value %}
 iface {{ item.value.parent }}.{{ item.key }} inet static
-	address   {{ item.value.ip | ipaddr('address') }}
-	network   {{ item.value.ip | ipaddr('network') }}
-	netmask   {{ item.value.ip | ipaddr('netmask') }}
-	broadcast {{ item.value.ip | ipaddr('broadcast') }}
+	address {{ item.value.ip | ipaddr('address/prefix') }}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
 	post-up ip route add {{ item.value.ip|ipaddr('subnet') }} dev ${IFACE} src {{ item.value.ip | ipaddr('address') }} table {{ item.value.rt }}

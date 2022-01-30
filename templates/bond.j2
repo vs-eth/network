@@ -41,10 +41,7 @@ iface {{ item.key }}if inet static
 	ovs-extra set interface ${IFACE} external-ids:iface-id=$(hostname -s)-${IFACE}-vif
 {% endif %}
 {% if 'ip' in item.value %}
-	address   {{ item.value.ip | ipaddr('address') }}
-	network   {{ item.value.ip | ipaddr('network') }}
-	netmask   {{ item.value.ip | ipaddr('netmask') }}
-	broadcast {{ item.value.ip | ipaddr('broadcast') }}
+	address {{ item.value.ip | ipaddr('address/prefix') }}
 {% endif %}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
