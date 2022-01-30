@@ -83,6 +83,6 @@ iface {{ item.key }} inet6 static
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 manual
-	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
+	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead.
 	post-up echo 1 > /proc/sys/net/ipv6/conf/${IFACE}/disable_ipv6
 {% endif %}

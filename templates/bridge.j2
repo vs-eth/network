@@ -1,6 +1,6 @@
 # Managed by ansible (role: network), do not edit!
 
-{% if 'parent' in item.value and item.value.parent.find(".") != -1 %}
+{% if 'parent' in item.value and item.value.parent.find(".") != -1 and network_ifupdown_version != 2 %}
 # Workaround for bridge-on-vlan race condition
 allow-hotplug {{ item.key }}
 {% else %}
@@ -49,18 +49,27 @@ iface {{ item.key }} inet6 static
 	accept_ra 0
 	autoconf 0
 {% endif %}
+	# ifupdown2 enables forwarding automatically on bridges which have an IP assigned.
+	# Set accept_ra to 2 for them being accepted with forwarding enabled.
+	post-up echo 2 > /proc/sys/net/ipv6/conf/${IFACE}/accept_ra
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 manual
-	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
+	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead.
 	post-up echo 1 > /proc/sys/net/ipv6/conf/${IFACE}/disable_ipv6
 {% endif %}
 {% else %}
 iface {{ item.key }} inet manual
 	bridge-ports {{ item.value.parent if 'parent' in item.value else 'none' }}
+	bridge-stp off
+	bridge-fd 0
+{% if network_ifupdown_version == 2 %}
+	bridge-vlan-aware on
+{% else %}
 	post-up echo 1 > /sys/class/net/${IFACE}/bridge/vlan_filtering
+{% endif %}
 
 iface {{ item.key }} inet6 manual
-	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
+	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead.
 	post-up echo 1 > /proc/sys/net/ipv6/conf/${IFACE}/disable_ipv6
 {% endif %}
