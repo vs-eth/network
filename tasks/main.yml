@@ -1,22 +1,37 @@
 ---
+  - assert:
+      that:
+        - network_ifupdown_version in [1, 2]
+
+  - name: Set variables
+    set_fact:
+      packages:
+        1:
+          - ifupdown
+          - bridge-utils
+          - resolvconf
+          - ifenslave
+          - iproute2
+        2:
+          - ifupdown2
+          - bridge-utils
+          - resolvconf
+          - iproute2
+
   - name: Install required software
     become: True
+    package:
+      name: "{{ packages[network_ifupdown_version] }}"
+      state: present
     when:
       - netconf is defined
-    apt:
-      name:
-        - bridge-utils
-        - resolvconf
-        - ifenslave
-        - iproute2
-      state: present
 
   - name: Kill cloud-config network configuration
     become: True
-    when: network_kill_cloudconfig | bool
     file:
       path: /etc/network/interfaces.d/50-cloud-init.cfg
       state: absent
+    when: network_kill_cloudconfig | bool
 
   - name: Configure routing tables
     become: True
