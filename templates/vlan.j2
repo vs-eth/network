@@ -7,7 +7,6 @@ iface {{ item.value.parent }}.{{ item.key }} inet static
 	network   {{ item.value.ip | ipaddr('network') }}
 	netmask   {{ item.value.ip | ipaddr('netmask') }}
 	broadcast {{ item.value.ip | ipaddr('broadcast') }}
-	vlan-raw-device {{ item.value.parent }}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
 	post-up ip route add {{ item.value.ip|ipaddr('subnet') }} dev ${IFACE} src {{ item.value.ip | ipaddr('address') }} table {{ item.value.rt }}
@@ -43,7 +42,6 @@ iface {{ item.value.parent }}.{{ item.key }} inet6 manual
 {% endif %}
 {% else %}
 iface {{ item.value.parent }}.{{ item.key }} inet manual
-	vlan-raw-device {{ item.value.parent }}
 {% for iface in item.value.startifs|default([]) %}
 	post-up ifup {{ iface }}
 {% endfor %}
