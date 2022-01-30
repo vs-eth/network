@@ -15,6 +15,7 @@ iface {{ item.key }} inet {{ 'static' if 'ip' in item.value else 'manual' }}
 	bond-xmit-hash-policy layer3+4
 	bond-miimon 100
 	bond-lacp-rate 1
+	bond-min-links 1
 	post-up {{ 'sleep 20 && ' if 'delay_up' in item.value and item.value.delay_up else '' }}echo 1000 > /sys/class/net/${IFACE}/bonding/ad_actor_sys_prio
 {% endif %}
 {% else %}
