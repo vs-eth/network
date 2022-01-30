@@ -42,9 +42,6 @@ iface {{ item.value.parent }}.{{ item.key }} inet6 manual
 {% endif %}
 {% else %}
 iface {{ item.value.parent }}.{{ item.key }} inet manual
-{% for iface in item.value.startifs|default([]) %}
-	post-up ifup {{ iface }}
-{% endfor %}
 
 iface {{ item.value.parent }}.{{ item.key }} inet6 manual
 	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead...
