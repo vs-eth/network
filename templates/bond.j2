@@ -13,15 +13,15 @@
 {% if network_mode == 'classic' %}
 auto {{ item.key }}
 iface {{ item.key }} inet {{ ipmode }}
-        slaves {{ item.value.slaves|join(' ') }}
+	bond-slaves {{ item.value.slaves|join(' ') }}
 {% if 'bondmode' in item.value %}
-        bond_mode {{ item.value.bondmode }}
+	bond_mode {{ item.value.bondmode }}
 {% else %}
-        bond_mode 802.3ad
-        bond_xmit_hash_policy layer3+4
-        bond_miimon 100
-        bond_lacp-rate 1
-        post-up {{ 'sleep 20 && ' if 'delay_up' in item.value and item.value.delay_up else '' }}echo 1000 > /sys/class/net/{{ item.key }}/bonding/ad_actor_sys_prio
+	bond_mode 802.3ad
+	bond_xmit_hash_policy layer3+4
+	bond_miimon 100
+	bond_lacp-rate 1
+	post-up {{ 'sleep 20 && ' if 'delay_up' in item.value and item.value.delay_up else '' }}echo 1000 > /sys/class/net/{{ item.key }}/bonding/ad_actor_sys_prio
 {% endif %}
 {% else %}
 auto {{ item.key }}br
@@ -75,7 +75,7 @@ iface {{ item.key }}if inet static
 {% if item.value.ip6 == "dhcp" %}
 iface {{ item.key }} inet6 dhcp
 {% if 'prefix' in item.value %}
-        request_prefix 1
+	request_prefix 1
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 static

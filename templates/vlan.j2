@@ -45,7 +45,7 @@ iface {{ item.value.parent }}.{{ item.key }} inet6 manual
 iface {{ item.value.parent }}.{{ item.key }} inet manual
 	vlan-raw-device {{ item.value.parent }}
 {% for iface in item.value.startifs|default([]) %}
-        post-up ifup {{ iface }}
+	post-up ifup {{ iface }}
 {% endfor %}
 
 iface {{ item.value.parent }}.{{ item.key }} inet6 manual

@@ -29,7 +29,7 @@ iface {{ item.key }} inet static
 {% if item.value.ip6 == "dhcp" %}
 iface {{ item.key }} inet6 dhcp
 {% if 'prefix' in item.value %}
-        request_prefix 1
+	request_prefix 1
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 static
