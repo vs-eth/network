@@ -26,6 +26,13 @@
     when:
       - netconf is defined
 
+  - name: Remove ifenslave when using ifupdown2
+    become: True
+    package:
+      name: ifenslave
+      state: absent
+    when: network_ifupdown_version == 2
+
   - name: Kill cloud-config network configuration
     become: True
     file:
