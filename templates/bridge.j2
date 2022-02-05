@@ -63,11 +63,6 @@ iface {{ item.key }} inet manual
 	bridge-ports {{ item.value.parent if 'parent' in item.value else 'none' }}
 	bridge-stp off
 	bridge-fd 0
-{% if network_ifupdown_version == 2 %}
-	bridge-vlan-aware on
-{% else %}
-	post-up echo 1 > /sys/class/net/${IFACE}/bridge/vlan_filtering
-{% endif %}
 
 iface {{ item.key }} inet6 manual
 	# Explicitly disabling acceptance of RAs can race, disable IPv6 on this interface instead.
