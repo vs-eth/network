@@ -1,22 +1,44 @@
 ---
+  - assert:
+      that:
+        - network_ifupdown_version in [1, 2]
+
+  - name: Set variables
+    set_fact:
+      packages:
+        1:
+          - ifupdown
+          - bridge-utils
+          - resolvconf
+          - ifenslave
+          - iproute2
+        2:
+          - ifupdown2
+          - bridge-utils
+          - resolvconf
+          - iproute2
+
   - name: Install required software
     become: True
+    package:
+      name: "{{ packages[network_ifupdown_version] }}"
+      state: present
     when:
       - netconf is defined
-    apt:
-      name:
-        - bridge-utils
-        - resolvconf
-        - ifenslave
-        - iproute2
-      state: present
+
+  - name: Remove ifenslave when using ifupdown2
+    become: True
+    package:
+      name: ifenslave
+      state: absent
+    when: network_ifupdown_version == 2
 
   - name: Kill cloud-config network configuration
     become: True
-    when: network_kill_cloudconfig | bool
     file:
       path: /etc/network/interfaces.d/50-cloud-init.cfg
       state: absent
+    when: network_kill_cloudconfig | bool
 
   - name: Configure routing tables
     become: True
@@ -35,6 +57,7 @@
     become: True
     template: src=if.j2 dest=/etc/network/interfaces.d/{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['if'] }}"
+    register: ifs_result
     when:
       - netconf is defined
       - netconf.if is defined
@@ -43,6 +66,7 @@
     become: True
     template: src=bond.j2 dest=/etc/network/interfaces.d/{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['bond'] }}"
+    register: bonds_result
     when:
       - netconf is defined
       - netconf.bond is defined
@@ -51,6 +75,7 @@
     become: True
     template: src=vlan.j2 dest=/etc/network/interfaces.d/zz-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['vlan'] }}"
+    register: vlans_result
     when:
       - netconf is defined
       - netconf.vlan is defined
@@ -59,6 +84,7 @@
     become: True
     template: src=bridge.j2 dest=/etc/network/interfaces.d/zz-{{ item.key }} owner=root group=root mode=0644
     with_dict: "{{ hostvars[inventory_hostname]['netconf']['bridge'] }}"
+    register: bridges_result
     when:
       - netconf is defined
       - netconf.bridge is defined
@@ -76,3 +102,27 @@
     when:
       - netconf is defined
       - network_squash_config | bool
+
+  - name: Remove unmanaged interface configs
+    block:
+    - set_fact:
+        managed_files: "{{  ['/etc/network/interfaces.d/lo'] \
+                           + ifs_result.results|default([])|map(attribute='invocation.module_args.dest')|list \
+                           + bonds_result.results|default([])|map(attribute='invocation.module_args.dest')|list \
+                           + vlans_result.results|default([])|map(attribute='invocation.module_args.dest')|list \
+                           + bridges_result.results|default([])|map(attribute='invocation.module_args.dest')|list }}"
+
+    - find:
+        paths: "/etc/network/interfaces.d"
+      register: all_files
+
+    - set_fact:
+        files_to_delete: "{{ all_files.files|map(attribute='path')|difference(managed_files) }}"
+
+    - file:
+        path: "{{ item }}"
+        state: absent
+      with_items: "{{ files_to_delete }}"
+    when:
+      - netconf is defined
+      - network_manage_config_exclusively|bool

@@ -1,18 +1,11 @@
 # Managed by ansible (role: network), do not edit!
 
 allow-hotplug {{ item.key }}
-{% if item.value.ip == "dhcp" %}
-iface {{ item.key }} inet dhcp
-{% else %}
 iface {{ item.key }} inet static
-	address   {{ item.value.ip | ipaddr('address') }}
-	network   {{ item.value.ip | ipaddr('network') }}
-	netmask   {{ item.value.ip | ipaddr('netmask') }}
-	broadcast {{ item.value.ip | ipaddr('broadcast') }}
-{% endif %}
+	address {{ item.value.ip | ipaddr('address/prefix') }}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
-	post-up ip route add default via {{ item.value.gateway }} dev {{ item.key }} table {{ item.value.rt }}
+	post-up ip route add default via {{ item.value.gateway }} dev ${IFACE} table {{ item.value.rt }}
 	post-up ip rule add from {{ item.value.ip | ipaddr('address') }}/32 table {{ item.value.rt }}
 	post-up ip rule add to {{ item.value.ip | ipaddr('address') }}/32 table {{ item.value.rt }}
 {% else %}
@@ -33,14 +26,14 @@ iface {{ item.key }} inet static
 {% if item.value.ip6 == "dhcp" %}
 iface {{ item.key }} inet6 dhcp
 {% if 'prefix' in item.value %}
-        request_prefix 1
+	request_prefix 1
 {% endif %}
 {% else %}
 iface {{ item.key }} inet6 static
 	address {{ item.value.ip6 }}
 {% if 'rt' in item.value %}
-	post-up ip -6 route add {{ item.value.ip6|ipaddr('subnet') }} dev {{ item.key }} src {{ item.value.ip6 | ipaddr('address') }} table {{ item.value.rt }}
-	post-up ip -6 route add default via {{ item.value.gateway6 }} dev {{ item.key }} table {{ item.value.rt }}
+	post-up ip -6 route add {{ item.value.ip6|ipaddr('subnet') }} dev ${IFACE} src {{ item.value.ip6 | ipaddr('address') }} table {{ item.value.rt }}
+	post-up ip -6 route add default via {{ item.value.gateway6 }} dev ${IFACE} table {{ item.value.rt }}
 	post-up ip -6 rule add from {{ item.value.ip6 }} table {{ item.value.rt }}
 	post-up ip -6 rule add to {{ item.value.ip6 }} table {{ item.value.rt }}
 	accept_ra 0

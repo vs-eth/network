@@ -25,6 +25,9 @@ It is configured by setting `netconf` for the host, there are the following opti
   * parent: Interface this VLAN should be created on
 * rt: Extra routing tables. Maps from name to number
 
+ifupdown and ifupdown2 support can be selected by setting `ifupdown_version` to "1" or "2". This is a mandatory variable without a default setting.
+With `network_manage_config_exclusively` set to `True`, all network configs not managed by this role will be deleted.
+
 Note that for each interface type, the element contains a list of dicts, where each dict's key is the name of an interface and each dict's value is the interface configuration as specified above.
 Example configuration (for `mon-hci.sos.ethz.ch`):
 ```

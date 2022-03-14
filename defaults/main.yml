@@ -6,3 +6,4 @@ ovs_untagged_vlan: 2523
 network_mode: 'classic'
 network_squash_config: False
 network_kill_cloudconfig: False
+network_manage_config_exclusively: False
