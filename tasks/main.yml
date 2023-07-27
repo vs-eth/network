@@ -1,128 +1,172 @@
 ---
-  - assert:
-      that:
-        - network_ifupdown_version in [1, 2]
+- name: Check variables
+  ansible.builtin.assert:
+    that:
+      - network_ifupdown_version in [1, 2]
 
-  - name: Set variables
-    set_fact:
-      packages:
-        1:
-          - ifupdown
-          - bridge-utils
-          - resolvconf
-          - ifenslave
-          - iproute2
-        2:
-          - ifupdown2
-          - bridge-utils
-          - resolvconf
-          - iproute2
+- name: Set facts
+  ansible.builtin.set_fact:
+    packages:
+      1:
+        - ifupdown
+        - bridge-utils
+        - resolvconf
+        - ifenslave
+        - iproute2
+      2:
+        - ifupdown2
+        - bridge-utils
+        - resolvconf
+        - iproute2
 
-  - name: Install required software
-    become: True
-    package:
-      name: "{{ packages[network_ifupdown_version] }}"
-      state: present
-    when:
-      - netconf is defined
+- name: Install required software
+  become: true
+  ansible.builtin.package:
+    name: "{{ packages[network_ifupdown_version] }}"
+    state: present
+  when:
+    - netconf is defined
 
-  - name: Remove ifenslave when using ifupdown2
-    become: True
-    package:
-      name: ifenslave
-      state: absent
-    when: network_ifupdown_version == 2
+- name: Remove ifenslave when using ifupdown2
+  become: true
+  ansible.builtin.package:
+    name: ifenslave
+    state: absent
+  when: network_ifupdown_version == 2
 
-  - name: Kill cloud-config network configuration
-    become: True
-    file:
-      path: /etc/network/interfaces.d/50-cloud-init.cfg
-      state: absent
-    when: network_kill_cloudconfig | bool
+- name: Kill cloud-config network configuration
+  become: true
+  ansible.builtin.file:
+    path: /etc/network/interfaces.d/50-cloud-init.cfg
+    state: absent
+  when: network_kill_cloudconfig | bool
 
-  - name: Configure routing tables
-    become: True
-    template: src=rt_tables.j2 dest=/etc/iproute2/rt_tables owner=root group=root mode=0644
-    when:
-      - netconf is defined
-      - netconf.rt is defined
+- name: Configure routing tables
+  become: true
+  ansible.builtin.template:
+    src: rt_tables.j2
+    dest: /etc/iproute2/rt_tables
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - netconf is defined
+    - netconf.rt is defined
 
-  - name: Configure loopback interface
-    become: True
-    copy: src=lo dest=/etc/network/interfaces.d/lo owner=root group=root mode=0644
-    when:
-      - netconf is defined
+- name: Configure loopback interface
+  become: true
+  ansible.builtin.copy:
+    src: lo
+    dest: /etc/network/interfaces.d/lo
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - netconf is defined
 
-  - name: Configure normal interfaces
-    become: True
-    template: src=if.j2 dest=/etc/network/interfaces.d/{{ item.key }} owner=root group=root mode=0644
-    with_dict: "{{ hostvars[inventory_hostname]['netconf']['if'] }}"
-    register: ifs_result
-    when:
-      - netconf is defined
-      - netconf.if is defined
+- name: Configure normal interfaces
+  become: true
+  ansible.builtin.template:
+    src: if.j2
+    dest: /etc/network/interfaces.d/{{ item.key }}
+    owner: root
+    group: root
+    mode: "0644"
+  with_dict: "{{ hostvars[inventory_hostname]['netconf']['if'] }}"
+  register: ifs_result
+  when:
+    - netconf is defined
+    - netconf.if is defined
 
-  - name: Configure bond interfaces
-    become: True
-    template: src=bond.j2 dest=/etc/network/interfaces.d/{{ item.key }} owner=root group=root mode=0644
-    with_dict: "{{ hostvars[inventory_hostname]['netconf']['bond'] }}"
-    register: bonds_result
-    when:
-      - netconf is defined
-      - netconf.bond is defined
+- name: Configure bond interfaces
+  become: true
+  ansible.builtin.template:
+    src: bond.j2
+    dest: /etc/network/interfaces.d/{{ item.key }}
+    owner: root
+    group: root
+    mode: "0644"
+  with_dict: "{{ hostvars[inventory_hostname]['netconf']['bond'] }}"
+  register: bonds_result
+  when:
+    - netconf is defined
+    - netconf.bond is defined
 
-  - name: Configure vlan interfaces
-    become: True
-    template: src=vlan.j2 dest=/etc/network/interfaces.d/zz-{{ item.value.parent }}.{{ item.key }} owner=root group=root mode=0644
-    with_dict: "{{ hostvars[inventory_hostname]['netconf']['vlan'] }}"
-    register: vlans_result
-    when:
-      - netconf is defined
-      - netconf.vlan is defined
+- name: Configure vlan interfaces
+  become: true
+  ansible.builtin.template:
+    src: vlan.j2
+    dest: /etc/network/interfaces.d/zz-{{ item.value.parent }}.{{ item.key }}
+    owner: root
+    group: root
+    mode: "0644"
+  with_dict: "{{ hostvars[inventory_hostname]['netconf']['vlan'] }}"
+  register: vlans_result
+  when:
+    - netconf is defined
+    - netconf.vlan is defined
 
-  - name: Configure bridge interfaces
-    become: True
-    template: src=bridge.j2 dest=/etc/network/interfaces.d/zz-{{ item.key }} owner=root group=root mode=0644
-    with_dict: "{{ hostvars[inventory_hostname]['netconf']['bridge'] }}"
-    register: bridges_result
-    when:
-      - netconf is defined
-      - netconf.bridge is defined
+- name: Configure bridge interfaces
+  become: true
+  ansible.builtin.template:
+    src: bridge.j2
+    dest: /etc/network/interfaces.d/zz-{{ item.key }}
+    owner: root
+    group: root
+    mode: "0644"
+  with_dict: "{{ hostvars[inventory_hostname]['netconf']['bridge'] }}"
+  register: bridges_result
+  when:
+    - netconf is defined
+    - netconf.bridge is defined
 
-  - name: Overwrite main network config file
-    become: True
-    template: src=interfaces.j2 dest=/etc/network/interfaces owner=root group=root mode=0644
-    when:
-      - netconf is defined
-      - not network_squash_config
+- name: Overwrite main network config file
+  become: true
+  ansible.builtin.template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - netconf is defined
+    - not network_squash_config
 
-  - name: Overwrite main network config file
-    become: True
-    assemble: src=/etc/network/interfaces.d dest=/etc/network/interfaces owner=root group=root mode=0644
-    when:
-      - netconf is defined
-      - network_squash_config | bool
+- name: Overwrite main network config file
+  become: true
+  ansible.builtin.assemble:
+    src: /etc/network/interfaces.d
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - netconf is defined
+    - network_squash_config | bool
 
-  - name: Remove unmanaged interface configs
-    block:
-    - set_fact:
+- name: Remove unmanaged interface configs
+  when:
+    - netconf is defined
+    - network_manage_config_exclusively|bool
+  block:
+    - name: Set facts
+      ansible.builtin.set_fact:
         managed_files: "{{  ['/etc/network/interfaces.d/lo'] \
-                           + ifs_result.results|default([])|map(attribute='invocation.module_args.dest')|list \
-                           + bonds_result.results|default([])|map(attribute='invocation.module_args.dest')|list \
-                           + vlans_result.results|default([])|map(attribute='invocation.module_args.dest')|list \
-                           + bridges_result.results|default([])|map(attribute='invocation.module_args.dest')|list }}"
-
-    - find:
+                         + ifs_result.results | default([]) | map(attribute='invocation.module_args.dest') | list \
+                         + bonds_result.results | default([]) | map(attribute='invocation.module_args.dest') | list \
+                         + vlans_result.results | default([]) | map(attribute='invocation.module_args.dest') | list \
+                         + bridges_result.results | default([]) | map(attribute='invocation.module_args.dest') | list }}"
+    - name: Find interfaces.d files
+      ansible.builtin.find:
         paths: "/etc/network/interfaces.d"
       register: all_files
 
-    - set_fact:
-        files_to_delete: "{{ all_files.files|map(attribute='path')|difference(managed_files) }}"
+    - name: Set files to delete
+      ansible.builtin.set_fact:
+        files_to_delete: "{{ all_files.files | map(attribute='path') | difference(managed_files) }}"
 
-    - file:
+    - name: Delete unmanaged interface configs
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       with_items: "{{ files_to_delete }}"
-    when:
-      - netconf is defined
-      - network_manage_config_exclusively|bool
