@@ -11,13 +11,13 @@ iface {{ item.key }} inet static
 	bridge-ports {{ item.value.parent if 'parent' in item.value else 'none' }}
 	bridge-stp off
 	bridge-fd 0
-	address {{ item.value.ip | ipaddr('address/prefix') }}
+	address {{ item.value.ip | ansible.utils.ipaddr('address/prefix') }}
 {% if 'gateway' in item.value %}
 {% if 'rt' in item.value %}
-	post-up ip route add {{ item.value.ip|ipaddr('subnet') }} dev {{ item.value.parent }}.${IFACE} src {{ item.value.ip | ipaddr('address') }} table {{ item.value.rt }}
+	post-up ip route add {{ item.value.ip | ansible.utils.ipaddr('subnet') }} dev {{ item.value.parent }}.${IFACE} src {{ item.value.ip | ansible.utils.ipaddr('address') }} table {{ item.value.rt }}
 	post-up ip route add default via {{ item.value.gateway }} dev {{ item.value.parent }}.${IFACE} table {{ item.value.rt }}
-	post-up ip rule add from {{ item.value.ip | ipaddr('address') }}/32 table {{ item.value.rt }}
-	post-up ip rule add to {{ item.value.ip | ipaddr('address') }}/32 table {{ item.value.rt }}
+	post-up ip rule add from {{ item.value.ip | ansible.utils.ipaddr('address') }}/32 table {{ item.value.rt }}
+	post-up ip rule add to {{ item.value.ip | ansible.utils.ipaddr('address') }}/32 table {{ item.value.rt }}
 {% else %}
 	gateway {{ item.value.gateway }}
 {% endif %}
@@ -42,7 +42,7 @@ iface {{ item.key }} inet6 dhcp
 iface {{ item.key }} inet6 static
 	address {{ item.value.ip6 }}
 {% if 'rt' in item.value and 'parent' in item.value %}
-	post-up ip -6 route add {{ item.value.ip6|ipaddr('subnet') }} dev {{ item.value.parent }}.${IFACE} src {{ item.value.ip6 | ipaddr('address') }} table {{ item.value.rt }}
+	post-up ip -6 route add {{ item.value.ip6 | ansible.utils.ipaddr('subnet') }} dev {{ item.value.parent }}.${IFACE} src {{ item.value.ip6 | ansible.utils.ipaddr('address') }} table {{ item.value.rt }}
 	post-up ip -6 route add default via {{ item.value.gateway6 }} dev {{ item.value.parent }}.${IFACE} table {{ item.value.rt }}
 	post-up ip -6 rule add from {{ item.value.ip6 }} table {{ item.value.rt }}
 	post-up ip -6 rule add to {{ item.value.ip6 }} table {{ item.value.rt }}
