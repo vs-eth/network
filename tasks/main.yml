@@ -132,7 +132,7 @@
     - netconf is defined
     - not network_squash_config
 
-- name: Overwrite main network config file
+- name: Overwrite main network config file (squashed)
   become: true
   ansible.builtin.assemble:
     src: /etc/network/interfaces.d
