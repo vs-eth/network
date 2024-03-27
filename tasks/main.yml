@@ -37,8 +37,12 @@
 - name: Kill cloud-config network configuration
   become: true
   ansible.builtin.file:
-    path: /etc/network/interfaces.d/50-cloud-init.cfg
+    path: "{{ item }}"
     state: absent
+  loop:
+    - /etc/network/interfaces.d/50-cloud-init.cfg
+    - /etc/netplan/50-cloud-init.yaml
+    - /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg
   when: network_kill_cloudconfig | bool
 
 - name: Configure routing tables
